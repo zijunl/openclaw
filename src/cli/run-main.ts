@@ -8,6 +8,7 @@ import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { normalizeEnv } from "../infra/env.js";
 import { formatUncaughtError } from "../infra/errors.js";
 import { isMainModule } from "../infra/is-main.js";
+import { initSsrFProxyFromConfig, stopSsrFProxy } from "../infra/net/ssrf-proxy/startup-hook.js";
 import { ensureGlobalUndiciEnvProxyDispatcher } from "../infra/net/undici-global-dispatcher.js";
 import { ensureOpenClawCliOnPath } from "../infra/path-env.js";
 import { assertSupportedRuntime } from "../infra/runtime-guard.js";
@@ -192,6 +193,31 @@ export async function runCli(argv: string[] = process.argv) {
 
   // Enforce the minimum supported runtime before doing any work.
   assertSupportedRuntime();
+
+  // Activate the network-level SSRF proxy if configured. This is best-effort:
+  //   - If config can't be loaded yet (e.g. fast-path commands), it's skipped.
+  //   - If ssrfProxy is disabled or Caddy is missing, it logs a warning and
+  //     openclaw continues with application-level guards only.
+  // The handle is captured so we can shut Caddy down on exit.
+  let ssrfProxyHandle: Awaited<ReturnType<typeof initSsrFProxyFromConfig>> = null;
+  try {
+    const { loadConfig } = await import("../config/io.js");
+    const config = loadConfig();
+    ssrfProxyHandle = await initSsrFProxyFromConfig(config);
+  } catch {
+    // Config load may fail for many CLI commands that don't need it (e.g.
+    // help, version). Don't block startup — application-level guards remain.
+    ssrfProxyHandle = null;
+  }
+  // Graceful shutdown — stop Caddy when openclaw exits via any signal.
+  if (ssrfProxyHandle) {
+    const shutdown = () => {
+      void stopSsrFProxy(ssrfProxyHandle);
+    };
+    process.once("SIGTERM", shutdown);
+    process.once("SIGINT", shutdown);
+    process.once("exit", shutdown);
+  }
 
   try {
     if (shouldUseRootHelpFastPath(normalizedArgv)) {

@@ -133,6 +133,8 @@ export type OpenClawConfig = {
   gateway?: GatewayConfig;
   memory?: MemoryConfig;
   mcp?: McpConfig;
+  /** Network-level SSRF protection via Caddy forward proxy sidecar. */
+  ssrfProxy?: import("./zod-schema.ssrf-proxy.js").SsrFProxyConfig;
 };
 
 declare const openClawConfigStateBrand: unique symbol;

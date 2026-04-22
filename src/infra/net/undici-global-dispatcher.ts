@@ -153,3 +153,18 @@ export function resetGlobalUndiciStreamTimeoutsForTests(): void {
   lastAppliedTimeoutKey = null;
   lastAppliedProxyBootstrap = false;
 }
+
+/**
+ * Force-reset the global undici dispatcher state so that
+ * ensureGlobalUndiciEnvProxyDispatcher() will re-evaluate proxy environment
+ * variables and install a fresh EnvHttpProxyAgent.
+ *
+ * This is called by the SSRF proxy lifecycle after injecting HTTP_PROXY /
+ * HTTPS_PROXY into process.env, ensuring the already-running process picks up
+ * the newly launched Caddy sidecar without requiring a restart.
+ */
+export function forceResetGlobalDispatcher(): void {
+  lastAppliedTimeoutKey = null;
+  lastAppliedProxyBootstrap = false;
+  ensureGlobalUndiciEnvProxyDispatcher();
+}
