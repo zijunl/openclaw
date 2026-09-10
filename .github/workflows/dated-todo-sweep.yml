@@ -1,8 +1,9 @@
 name: Dated TODO sweep
 
+# Fork note: scheduled runs disabled on this fork — these maintenance automations
+# require upstream-only secrets (GitHub App private keys, LLM API keys,
+# registry credentials) that are not available on forks. Manual dispatch still works.
 on:
-  schedule:
-    - cron: "23 6 * * 1"
   workflow_dispatch:
     inputs:
       dry_run:

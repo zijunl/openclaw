@@ -1,5 +1,8 @@
 name: Docker Image Refresh
 
+# Fork note: scheduled runs disabled on this fork — these maintenance automations
+# require upstream-only secrets (GitHub App private keys, LLM API keys,
+# registry credentials) that are not available on forks. Manual dispatch still works.
 on:
   workflow_dispatch:
     inputs:
@@ -17,8 +20,6 @@ on:
         required: false
         default: false
         type: boolean
-  schedule:
-    - cron: "17 3 * * 1"
 
 permissions:
   contents: read

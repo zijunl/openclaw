@@ -4,9 +4,10 @@ name: PR CI Sweeper
 # cancelled GitHub Actions checks attached to auto-merge PR heads. The app token
 # authorizes reruns; GITHUB_TOKEN close/reopen events would not trigger CI.
 
+# Fork note: scheduled runs disabled on this fork — these maintenance automations
+# require upstream-only secrets (GitHub App private keys, LLM API keys,
+# registry credentials) that are not available on forks. Manual dispatch still works.
 on:
-  schedule:
-    - cron: "7 * * * *"
   workflow_dispatch:
     inputs:
       dry_run:

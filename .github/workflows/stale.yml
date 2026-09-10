@@ -1,8 +1,9 @@
 name: Stale
 
+# Fork note: scheduled runs disabled on this fork — these maintenance automations
+# require upstream-only secrets (GitHub App private keys, LLM API keys,
+# registry credentials) that are not available on forks. Manual dispatch still works.
 on:
-  schedule:
-    - cron: "17 3 * * *"
   workflow_dispatch:
     inputs:
       backfill_stale_closures:

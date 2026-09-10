@@ -1,8 +1,9 @@
 name: OpenClaw Scheduled Live And E2E Checks
 
+# Fork note: scheduled runs disabled on this fork — these maintenance automations
+# require upstream-only secrets (GitHub App private keys, LLM API keys,
+# registry credentials) that are not available on forks. Manual dispatch still works.
 on:
-  schedule:
-    - cron: "23 4 * * *"
   workflow_dispatch:
 
 permissions:
