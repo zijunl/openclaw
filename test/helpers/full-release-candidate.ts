@@ -4,6 +4,18 @@ import { buildFullReleaseCandidateRequest } from "../../scripts/full-release-can
 const TARGET_SHA = "a".repeat(40);
 const TOOLING_SHA = "b".repeat(40);
 
+// All fixtures built in one test run share a single expiry timestamp.
+// Recomputing Date.now() per call makes deep-equality assertions across
+// subprocess boundaries flake on millisecond clock drift (the binding CLI
+// echoes fixture values minted earlier in the test, then the test rebuilds
+// the fixture for comparison).
+let sharedExpiresAt: string | undefined;
+
+function fixtureExpiresAt(): string {
+  sharedExpiresAt ??= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  return sharedExpiresAt;
+}
+
 function canonicalize(value: unknown): unknown {
   if (Array.isArray(value)) {
     return value.map(canonicalize);
@@ -52,7 +64,8 @@ export function fullReleaseCandidateArtifact(
     id: "101",
     digest: "c".repeat(64),
     // Keep CLI fixtures (which run against the real clock) safely in the future.
-    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    // Memoized so fixtures built at different times in one run stay identical.
+    expiresAt: fixtureExpiresAt(),
     runId: "77",
     runAttempt: "1",
     ...overrides,
