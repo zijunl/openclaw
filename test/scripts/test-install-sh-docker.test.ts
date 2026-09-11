@@ -2654,7 +2654,7 @@ node -e 'const fs=require("node:fs");const p=process.argv[1];const value=JSON.pa
     },
   );
 
-  it("gates workflow Bun install smoke to scheduled and release-check runs", () => {
+  it("gates workflow Bun install smoke to manual and release-check runs", () => {
     const workflow = readFileSync(INSTALL_SMOKE_WORKFLOW_PATH, "utf8");
     const wrapper = readFileSync(INSTALL_SMOKE_WRAPPER_PATH, "utf8");
     const releaseChecks = readFileSync(RELEASE_CHECKS_WORKFLOW_PATH, "utf8");
@@ -2664,7 +2664,8 @@ node -e 'const fs=require("node:fs");const p=process.argv[1];const value=JSON.pa
     expect(workflow).toContain("workflow_call:");
     expect(workflow).not.toContain("workflow_dispatch:");
     expect(workflow).not.toContain("schedule:");
-    expect(wrapper).toContain('cron: "17 3 * * *"');
+    // Fork note: scheduled runs disabled on this fork — manual dispatch only.
+    expect(wrapper).not.toContain("cron:");
     expect(wrapper).toContain("workflow_dispatch:");
     expect(wrapper).toContain("uses: ./.github/workflows/install-smoke-reusable.yml");
     expect(wrapper).toContain(

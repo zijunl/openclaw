@@ -2,7 +2,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { afterEach, assert, describe, expect, it } from "vitest";
+import { afterEach, assert, beforeEach, describe, expect, it } from "vitest";
 import { buildFullReleaseCandidateBinding } from "../../scripts/full-release-candidate-contract.mjs";
 import {
   composeReleaseAttemptJobs,
@@ -1105,6 +1105,20 @@ describe("release child attempt composition", () => {
 });
 
 describe("release decision policy", () => {
+  // The mocked child runs below declare repository "openclaw/openclaw".
+  // Pin the ambient repository so these tests pass on forks too.
+  const originalRepository = process.env.GITHUB_REPOSITORY;
+  beforeEach(() => {
+    process.env.GITHUB_REPOSITORY = "openclaw/openclaw";
+  });
+  afterEach(() => {
+    if (originalRepository === undefined) {
+      delete process.env.GITHUB_REPOSITORY;
+    } else {
+      process.env.GITHUB_REPOSITORY = originalRepository;
+    }
+  });
+
   it.each(["beta", "stable", "full"])(
     "records Windows/macOS failures without blocking %s publication",
     (releaseProfile) => {

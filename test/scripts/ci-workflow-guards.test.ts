@@ -2378,7 +2378,7 @@ NODE
     expect(findUnpinnedExternalActions()).toEqual([]);
   });
 
-  it("schedules approved Docker refreshes from independently resolved channels", () => {
+  it("runs Docker refreshes manually (scheduled runs disabled on this fork)", () => {
     const workflow = readWorkflow(".github/workflows/docker-image-refresh.yml");
     const releaseWorkflow = readWorkflow(".github/workflows/docker-release.yml");
     const plan = workflow.jobs.plan;
@@ -2393,7 +2393,9 @@ NODE
       "Docker refresh plan step",
     );
 
-    expect(workflow.on.schedule).toEqual([{ cron: "17 3 * * 1" }]);
+    // Fork note: scheduled runs disabled on this fork — upstream-only secrets
+    // are unavailable, so the Docker refresh is manual-dispatch only.
+    expect(workflow.on.schedule).toBeUndefined();
     expect(workflow.on.workflow_dispatch.inputs.channel).toEqual({
       description: "Release channel to rebuild",
       required: false,
