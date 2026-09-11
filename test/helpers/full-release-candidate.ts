@@ -51,7 +51,8 @@ export function fullReleaseCandidateArtifact(
     name,
     id: "101",
     digest: "c".repeat(64),
-    expiresAt: "2026-09-04T12:00:00Z",
+    // Keep CLI fixtures (which run against the real clock) safely in the future.
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     runId: "77",
     runAttempt: "1",
     ...overrides,
